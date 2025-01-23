@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Clock</title>
+    <style>
+        @font-face {
+            font-family: 'Pretendard-Light'; /* 원하는 폰트 이름 */
+            src: url('fonts/Pretendard-Light.ttf') format('truetype'); /* 파일 경로와 형식 */
+        }
+        body {
+            background-color: #202020;
+            color: white;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard-Light', sans-serif; /* 적용한 폰트를 사용 */
+        }
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #202020;
+            z-index: 1000;
+            padding-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+        #time-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+        .clock {
+            font-size: 1.5em;
+        }
+        #timetable {
+            margin-top: 20px;
+            text-align: center;
+        }
+        #timetable-main {
+            margin-top: 150px;
+            text-align: center;
+            position: relative;
+            margin-bottom: 50px;
+        }
+        .red-bar {
+            position: absolute;
+            width: 80%;
+            height: 3px;
+            background-color: #ff2e1f;
+            left: 10%;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div id="time-container">
+            <div class="clock" id="newyork-date">Loading...</div>
+            <div class="clock" id="seoul-date">Loading...</div>
+        </div>
+        <div id="time-container">
+            <div class="clock" id="newyork-time">New York: Loading...</div>
+            <div class="clock" id="seoul-time">Seoul: Loading...</div>
+        </div>
+            <div id="timetable">
+        <img src="header.png" alt="Timetable" style="max-width: 100%; height: auto;">
+    </div>
+    </header>
+    <div id="timetable-main">
+        <img src="timetable.png" alt="Timetable" style="width: 100%; height: auto;">
+        <div class="red-bar" id="red-bar"></div>
+    </div>
+    <script>
+        function updateTime() {
+            const now = new Date();
+
+            const seoulOffset = 9 * 60; // UTC+9
+            const newYorkOffset = -5 * 60; // UTC-5
+
+            const utcMinutes = now.getUTCMinutes();
+            const utcHours = now.getUTCHours();
+
+            const seoulTotalMinutes = utcHours * 60 + utcMinutes + seoulOffset;
+            const newYorkTotalMinutes = utcHours * 60 + utcMinutes + newYorkOffset;
+
+            const seoulHours = Math.floor((seoulTotalMinutes / 60) % 24);
+            const seoulMinutes = seoulTotalMinutes % 60;
+
+            const newYorkHours = Math.floor((newYorkTotalMinutes / 60 + 24) % 24);
+            const newYorkMinutes = (newYorkTotalMinutes % 60 + 60) % 60;
+
+            const seoulDate = new Date(now.getTime() + seoulOffset * 60000);
+            const newYorkDate = new Date(now.getTime() + newYorkOffset * 60000);
+
+            const seoulDay = seoulDate.toLocaleDateString('en-US', { weekday: 'short' });
+            const newYorkDay = newYorkDate.toLocaleDateString('en-US', { weekday: 'short' });
+
+            const seoulFullDate = seoulDate.toLocaleDateString();
+            const newYorkFullDate = newYorkDate.toLocaleDateString();
+
+            document.getElementById('seoul-time').textContent = `Seoul: ${seoulHours.toString().padStart(2, '0')}:${seoulMinutes.toString().padStart(2, '0')}`;
+            document.getElementById('newyork-time').textContent = `New York: ${newYorkHours.toString().padStart(2, '0')}:${newYorkMinutes.toString().padStart(2, '0')}`;
+
+            document.getElementById('seoul-date').textContent = `${seoulFullDate} (${seoulDay})`;
+            document.getElementById('newyork-date').textContent = `${newYorkFullDate} (${newYorkDay})`;
+
+            const timetableMain = document.getElementById('timetable-main');
+            const timetableHeight = timetableMain.offsetHeight;
+            const redBar = document.getElementById('red-bar');
+
+            const minutesInDay = newYorkHours * 60 + newYorkMinutes;
+            const percentage = minutesInDay / (24 * 60);
+            const barPosition = percentage * timetableHeight-9;
+
+            redBar.style.top = `${barPosition}px`;
+        }
+
+        setInterval(updateTime, 1000);
+        updateTime();
+    </script>
+</body>
+</html>
