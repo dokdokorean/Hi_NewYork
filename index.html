@@ -10,10 +10,10 @@
             src: url('fonts/Pretendard-Light.ttf') format('truetype'); /* 파일 경로와 형식 */
         }
         body {
-            background-color: #202020;
+            background-color: #101012;
             color: white;
             margin: 0;
-            padding: 0;
+            padding: 20px;
             font-family: 'Pretendard-Light', sans-serif; /* 적용한 폰트를 사용 */
         }
         header {
@@ -21,11 +21,11 @@
             top: 0;
             left: 0;
             width: 100%;
-            background-color: #202020;
+            background-color: #101012;
             z-index: 1000;
             padding-bottom: 20px;
+            height: 130px;
             text-align: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
         }
         #time-container {
             display: flex;
@@ -33,43 +33,62 @@
             margin-top: 10px;
         }
         .clock {
-            font-size: 1.5em;
+            font-size: 1em;
         }
         #timetable {
-            margin-top: 20px;
+            position: fixed;
+            left: 0;
+            top: 120px;
+            z-index: 1001;
             text-align: center;
+            margin-left: 20px;
+            margin-right: 20px;
+            border-top-right-radius: 15px;
+            border-top-left-radius: 15px;
+            background-color: #18171D;
         }
         #timetable-main {
-            margin-top: 150px;
+            margin-top: 120px;
             text-align: center;
             position: relative;
             margin-bottom: 50px;
+            padding: 30px;
+            border-bottom-right-radius: 15px;
+            border-bottom-left-radius: 15px;
+            background-color: #18171D;
         }
         .red-bar {
             position: absolute;
             width: 80%;
-            height: 3px;
-            background-color: #ff2e1f;
+            height: 2px;
+            background-color: #ff91008d;
             left: 10%;
+        }
+        .status {
+            font-size: 1em;
         }
     </style>
 </head>
 <body>
     <header>
-        <div id="time-container">
-            <div class="clock" id="newyork-date">Loading...</div>
-            <div class="clock" id="seoul-date">Loading...</div>
+        <div style="display:flex;flex-direction: row;padding-Left: 20px;padding-Right: 20px;">
+            <div style="width: 50%;">
+                <p>혜림</p>
+                <div class="clock" id="newyork-date">Loading...</div>
+                <div class="status" id="hyerim-status">Seoul: Loading...</div>
+            </div>
+            <div style="width: 50%;">
+                <p>진우</p>
+                <div class="clock" id="seoul-date">Loading...</div>
+                <div class="status" id="jinwoo-status">New York: Loading...</div>
+            </div>
         </div>
-        <div id="time-container">
-            <div class="clock" id="newyork-time">New York: Loading...</div>
-            <div class="clock" id="seoul-time">Seoul: Loading...</div>
-        </div>
-            <div id="timetable">
-        <img src="header.png" alt="Timetable" style="max-width: 100%; height: auto;">
-    </div>
     </header>
     <div id="timetable-main">
-        <img src="timetable.png" alt="Timetable" style="width: 100%; height: auto;">
+        <div id="timetable">
+            <img src="header.png" alt="Timetable" style="max-width: 90%; height: auto;margin-top: 20px;margin-bottom:5px">
+        </div>
+        <img id="timetable-img" src="timetable.png" alt="Timetable" style="width: 100%; height: auto;">
         <div class="red-bar" id="red-bar"></div>
     </div>
     <script>
@@ -91,34 +110,130 @@
             const newYorkHours = Math.floor((newYorkTotalMinutes / 60 + 24) % 24);
             const newYorkMinutes = (newYorkTotalMinutes % 60 + 60) % 60;
 
-            const seoulDate = new Date(now.getTime() + seoulOffset * 60000);
-            const newYorkDate = new Date(now.getTime() + newYorkOffset * 60000);
+            // 시간대 정보 적용하여 날짜 가져오기
+const seoulTime = new Intl.DateTimeFormat('ko-KR', {
+        timeZone: 'Asia/Seoul',
+        month: 'long',
+        day: 'numeric',
+        weekday: 'short',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
+    }).format(now);
 
-            const seoulDay = seoulDate.toLocaleDateString('en-US', { weekday: 'short' });
-            const newYorkDay = newYorkDate.toLocaleDateString('en-US', { weekday: 'short' });
+    const newYorkTime = new Intl.DateTimeFormat('ko-KR', {
+        timeZone: 'America/New_York',
+        month: 'long',
+        day: 'numeric',
+        weekday: 'short',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
+    }).format(now);
 
-            const seoulFullDate = seoulDate.toLocaleDateString();
-            const newYorkFullDate = newYorkDate.toLocaleDateString();
+    // 화면 업데이트
+    document.getElementById('seoul-date').textContent = `${seoulTime}`;
+    document.getElementById('newyork-date').textContent = `${newYorkTime}`;
 
-            document.getElementById('seoul-time').textContent = `Seoul: ${seoulHours.toString().padStart(2, '0')}:${seoulMinutes.toString().padStart(2, '0')}`;
-            document.getElementById('newyork-time').textContent = `New York: ${newYorkHours.toString().padStart(2, '0')}:${newYorkMinutes.toString().padStart(2, '0')}`;
-
-            document.getElementById('seoul-date').textContent = `${seoulFullDate} (${seoulDay})`;
-            document.getElementById('newyork-date').textContent = `${newYorkFullDate} (${newYorkDay})`;
-
-            const timetableMain = document.getElementById('timetable-main');
+            const timetableMain = document.getElementById('timetable-img');
             const timetableHeight = timetableMain.offsetHeight;
             const redBar = document.getElementById('red-bar');
 
             const minutesInDay = newYorkHours * 60 + newYorkMinutes;
             const percentage = minutesInDay / (24 * 60);
-            const barPosition = percentage * timetableHeight-9;
+            const barPosition = percentage * timetableHeight;
 
-            redBar.style.top = `${barPosition}px`;
+            redBar.style.top = `${barPosition+30}px`;
         }
+        function checkNextClass() {
+    // 서울과 뉴욕 시간 가져오기
+    const nowSeoul = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+    const nowNewYork = new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
+
+    // 현재 요일 및 시간 정보 (진우: 서울 기준, 혜림: 뉴욕 기준)
+    const seoulDay = nowSeoul.getDay();
+    const seoulHours = nowSeoul.getHours();
+    const seoulMinutes = nowSeoul.getMinutes();
+    const seoulTotalMinutes = seoulHours * 60 + seoulMinutes;
+
+    const newYorkDay = nowNewYork.getDay();
+    const newYorkHours = nowNewYork.getHours();
+    const newYorkMinutes = nowNewYork.getMinutes();
+    const newYorkTotalMinutes = newYorkHours * 60 + newYorkMinutes;
+
+    const schedules = {
+        "진우": [
+            { day: 2, startHour: 10, startMin: 0, endHour: 13, endMin: 0, className: "현대사회와심리학" },
+            { day: 2, startHour: 13, startMin: 0, endHour: 16, endMin: 0, className: "창업비즈니스사업화" },
+            { day: 3, startHour: 11, startMin: 0, endHour: 11, endMin: 40, className: "채플" },
+            { day: 3, startHour: 14, startMin: 0, endHour: 16, endMin: 0, className: "경제학입문" },
+            { day: 4, startHour: 10, startMin: 0, endHour: 13, endMin: 0, className: "창업실무" }
+        ],
+        "혜림": [
+            { day: 1, startHour: 11, startMin: 40, endHour: 14, endMin: 30, className: "Interpersonal Communication" },
+            { day: 1, startHour: 14, startMin: 50, endHour: 16, endMin: 0, className: "Psyschology" },
+            { day: 2, startHour: 11, startMin: 40, endHour: 14, endMin: 30, className: "Communicating with data" },
+            { day: 2, startHour: 18, startMin: 15, endHour: 21, endMin: 0, className: "AI" },
+            { day: 3, startHour: 14, startMin: 50, endHour: 16, endMin: 0, className: "Psyschology" },
+            { day: 4, startHour: 8, startMin: 40, endHour: 11, endMin: 20, className: "Entreprenuership" }
+        ]
+    };
+
+    function getNextClass(schedule, currentDay, currentTotalMinutes) {
+        let todayHasClass = false;
+        let nextClass = null;
+        let minTimeDiff = Infinity;
+
+        for (const cls of schedule) {
+            const classStartMinutes = cls.startHour * 60 + cls.startMin;
+            const classEndMinutes = cls.endHour * 60 + cls.endMin;
+
+            if (cls.day === currentDay) {
+                // 현재 시간이 수업 중이면 "지금 [수업 이름] 수업 중"
+                if (currentTotalMinutes >= classStartMinutes && currentTotalMinutes < classEndMinutes) {
+                    return `${cls.className} 수업 중`;
+                }
+                // 오늘 이후 수업이 남아 있는지 확인
+                if (currentTotalMinutes < classStartMinutes) {
+                    todayHasClass = true;
+                    const timeDiff = classStartMinutes - currentTotalMinutes;
+                    if (timeDiff < minTimeDiff) {
+                        minTimeDiff = timeDiff;
+                        nextClass = cls;
+                    }
+                }
+            }
+        }
+
+        if (todayHasClass && nextClass) {
+            return `${Math.floor(minTimeDiff / 60)}시간 ${minTimeDiff % 60}분 뒤 ${nextClass.className} 수업`;
+        }
+
+        // 내일 이후 수업 찾기
+        for (let i = 1; i <= 7; i++) {
+            const nextDay = (currentDay + i) % 7;
+            for (const cls of schedule) {
+                if (cls.day === nextDay) {
+                    if (i === 1) return "오늘 수업 없음"; // 내일 수업이 있으면 "오늘 수업 없음"
+                    return `${i}일 뒤 ${cls.startHour}:${cls.startMin.toString().padStart(2, "0")}에 ${cls.className} 수업`;
+                }
+            }
+        }
+
+        return "다음 수업 없음";
+    }
+
+    document.getElementById('jinwoo-status').textContent = `${getNextClass(schedules["진우"], seoulDay, seoulTotalMinutes)}`;
+    document.getElementById('hyerim-status').textContent = `${getNextClass(schedules["혜림"], newYorkDay, newYorkTotalMinutes)}`;
+}
+
+setInterval(checkNextClass, 1000);
+checkNextClass();
+
 
         setInterval(updateTime, 1000);
         updateTime();
+
     </script>
 </body>
 </html>
